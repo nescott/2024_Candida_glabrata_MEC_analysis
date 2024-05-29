@@ -67,13 +67,13 @@ java -Xmx9g -jar "${snpeff}" -c "${snpeff_config}" "${snpeff_db}" \
 
 # subset annotated to just SNPs
 # and output tab-delimited file for use in R MCA script for preliminary clustering
-tr "\n" "\t" < samples.txt > "${genotypes_table}"
-sed -i -e '$\a' "${genotypes_table}"
-sed '1s/CHROM\tPOS\t/' "${genotypes_table}"
+bcftools view -m2 -M2 -v snps "${annotate_vcf}" \
+| bcftools view -e 'GT="mis"' \
+| bcftools query -H -f '%CHROM\t%POS[\t%GT]\n' > "${genotype_table}"
 
-bcftools view -e 'GT="mis"' "${annotate_vcf}" \
-| bcftools view -m2 -M2 -v snps \
-| bcftools query -f '%CHROM\t%POS[\t%GT]\n' >> "${genotype_table}"
+sed -i '1s/\[[0-9]\+\]//g' "${genotype_table}"
+sed -i '1s/\:GT//g' "${genotype_table}"
+sed -i '1s/\^# //' "${genotype_table}"
 
 bgzip "${annotate_vcf}"
 tabix "${annotate_vcf}".gz
