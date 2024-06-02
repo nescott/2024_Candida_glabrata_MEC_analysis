@@ -11,17 +11,11 @@
 #SBATCH -e %j.err
 #SBATCH --array=83
 
-# For a set of samples, perform adapter and quality trimming, align to selected reference genome,
-# sort and mark duplicates in BAM files, and generate basic alignment stats
-# input: tab delimited file of sample ID, read 1 and read 2
-# array size == number of samples
-
 set -ue
 set -o pipefail
 
 line=${SLURM_ARRAY_TASK_ID}
 sample_file=../Cglab_sequencing_paths.txt
-# make a global scratch directory with your x500 id, then a relevant subdirectory
 tempdir=/scratch.global/scot0854/cglabrata/  # with trailing slash
 species=Cglabrata
 ref_fasta=/home/selmecki/shared/disaster_recovery/Reference_Genomes/Cglabrata/CBS138_s05-m03-r02/C_glabrata_CBS138_version_s05-m03-r02_chromosomes.fasta
@@ -38,12 +32,7 @@ module load samtools/1.10
 module load bbmap
 
 # Check for/create output directories
-arr=("${tempdir}trimmed_fastq" "logs" "bbmap")
-for d in "${arr[@]}"; do
-  if [ ! -d "$d" ]; then
-    mkdir -p "$d"
-  fi
-done
+mkdir -p "${tempdir}"trimmed_fastq logs bbmap
 
 # JGI BBTools data preprocessing guidelines:
 ## trim adapters

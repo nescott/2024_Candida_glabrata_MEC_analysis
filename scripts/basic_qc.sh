@@ -1,40 +1,38 @@
 #!/bin/bash
 #SBATCH --nodes=1
+#SBATCH --cpus-per-task=8
 #SBATCH --mem=4gb
-#SBATCH --mail-type=ALL
+#SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=scot0854@umn.edu
-#SBATCH --time=1:00:00
+#SBATCH --time=8:00:00
 #SBATCH -p msismall,msilarge
-#SBATCH -o %x_%u_%j.out
-#SBATCH -e %x_%u_%j.err
+#SBATCH -o %j.out
+#SBATCH -e %j.err
 
 set -ue
 set -o pipefail
-unset DISPLAY
 
-file_name="$(date +%F)_Cglabrata_qc"
-temp_dir=/scratch.global/scot0854
+bam_dir=bam
+logs_dir=logs
+temp_dir=/scratch.global/scot0854/cglabrata
+file_name="$(date +%F)_qc"
 
 # Use local modules
-module use /home/selmecki/scot0854/modulefiles.local
+module use /home/selmecki/shared/software/modulefiles.local
 
 # Load modules
-#module load qualimap/20221111
-module load multiqc/20221111
+module load fastqc/0.11.9
+module load qualimap
+module load multiqc
 
-#find bam '(' -name "MEC084*.bam" -o -name "MEC086*.bam" -o -name "MEC096*.bam" ')' \
-#-exec qualimap bamqc -bam {} -outdir $temp_dir/{} \
-#--java-mem-size=4G \;
+# raw fastq file qc
+find "$temp_dir" -name "*trimmed_*P.fq" -exec fastqc  -t 8 "$temp_dir" {} \;
 
-#find bam '(' -name "MEC111*.bam" -o -name "MEC136*.bam" -o -name "MEC138*.bam" ')' \
-
-#-exec qualimap bamqc -bam {} -outdir $temp_dir/{} \
-#--java-mem-size=4G \;
-
-#find bam '(' -name "MEC158*.bam" -o -name "MEC014*.bam" ')' \
-#-exec qualimap bamqc -bam {} -outdir $temp_dir/{} \
-#--java-mem-size=4G \;
+# bam qc
+unset DISPLAY # qualimap won't work on cluster without this
+find "$bam_dir" -name "*.bam" \
+-exec qualimap bamqc -bam {} -outdir $temp_dir/{} --java-mem-size=4G  \;
 
 # multiqc
 
-multiqc "$temp_dir"/bam "$temp_dir"/qc_and_classifier logs/ -n "$file_name"
+multiqc "${temp_dir}" "${logs_dir}" "${bam_dir}" -o logs -n "$file_name"
