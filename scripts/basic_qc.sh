@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=8
-#SBATCH --mem=4gb
-#SBATCH --mail-type=END,FAIL
+#SBATCH --mem=6gb
+#SBATCH --mail-type=FAIL
 #SBATCH --mail-user=scot0854@umn.edu
 #SBATCH --time=8:00:00
 #SBATCH -p msismall,msilarge

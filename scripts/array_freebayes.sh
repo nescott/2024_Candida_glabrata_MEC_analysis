@@ -6,8 +6,8 @@
 #SBATCH --mail-user=scot0854@umn.edu
 #SBATCH --time=22:00:00
 #SBATCH -p msismall,msilarge
-#SBATCH -o %x_%u_%A_%a.out
-#SBATCH -e %x_%u_%A_%a.err
+#SBATCH -o %A_%a.out
+#SBATCH -e %A_%a.err
 #SBATCH --array=13
 
 # call variants for all samples in a population using freebayes, subsetting by region
@@ -22,6 +22,8 @@ bam_list=bam.files
 region_list=Cglabrata_chroms.txt
 
 chr=$(awk -v val="$line" 'NR == val { print $0}' $region_list)
+
+mkdir -p chr_vcf
 
 #Load modules
 module load samtools/1.10

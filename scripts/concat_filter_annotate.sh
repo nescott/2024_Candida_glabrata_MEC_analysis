@@ -1,18 +1,18 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --mem=10gb
+#SBATCH --mem=11gb
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-user=scot0854@umn.edu
 #SBATCH --time=2:00:00
-#SBATCH -p amdsmall,amdlarge,amd512
+#SBATCH -p msilarge,msismall
 #SBATCH -o %j.out
 #SBATCH -e %j.err
 
 set -ue
 set -o pipefail
 
-export BCFTOOLS_PLUGINS=/home/selmecki/shared/software/software.install/bcftools/1.17/plugins
+export BCFTOOLS_PLUGINS=/home/selmecki/shared/software/software.install/bcftools/1.17/libexec/bcftools/
 
 chr_dir=chr_vcf # location of vcf files to combine
 raw_vcf=Cglabrata_MEC_strains.vcf.gz
@@ -26,13 +26,12 @@ snpeff=/home/selmecki/shared/software/snpEff/snpEff.jar
 snpeff_config=/home/selmecki/shared/software/snpEff/snpEff.config
 snpeff_db=CBS138_s05m03r02
 annotate_vcf=Cglabrata_MEC_bwa_filtered_annotated.vcf # include .vcf
-genotype_table=Cglabrata_MEC_bwa_SNPs.txt  # tab delimited table for use with R scripts (MCA using FactoMineR)
 
 # Load modules
 module use /home/selmecki/shared/software/modulefiles.local
 
 module load bcftools/1.17
-module load htslib/1.9
+module load htslib
 
 # remove intermediate files
 function finish {
@@ -56,7 +55,7 @@ bcftools annotate \
     -a "${gene_file}" \
     -c CHROM,FROM,TO,GENE \
     -h <(echo '##INFO=<ID=GENE,Number=1,Type=String,Description="Gene name">')\
-    -o "${gene_vcf}" \
+    -Oz -o "${gene_vcf}" \
     "${raw_vcf}"
 
 bcftools index "${gene_vcf}"
@@ -64,12 +63,17 @@ bcftools index "${gene_vcf}"
 # sort samples alphanumerically
 bcftools query -l "${gene_vcf}" | sort > samples.txt
 bcftools view -S samples.txt -Ou "${gene_vcf}" \
-  | bcftools view -i "INFO/MQM>39" -Ou \
+    -Oz -o "${sorted_vcf}"
+
+bcftools index "${sorted_vcf}"
+
+bcftools view -i "INFO/MQM>39" "${sorted_vcf}" -Ou \
   | bcftools view -i "FORMAT/DP[*] >9" -Ou \
   | bcftools view -e 'INFO/TYPE="complex"' -Ou \
   | bcftools norm -f "${fasta}" -m -indels -Ou \
+  | bcftools view -M2 -Ou\
   | bcftools +fill-tags - -- -t "FORMAT/VAF" \
-  | bcftools view -i "FORMAT/VAF[*] > 0.9" -Ou \
+  | bcftools view -i "FORMAT/VAF[*] > 0.8" -Ou \
   | bcftools view -i "INFO/SAR>=1 & INFO/SAP>0 & INFO/RPL>1 & INFO/RPR>1" -Ou \
   | bcftools view -c 1 \
   -Oz -o "${bcftools_out}"
@@ -79,19 +83,6 @@ bcftools index "${bcftools_out}"
 # annotate using snpeff with manually built database
 java -Xmx9g -jar "${snpeff}" -c "${snpeff_config}" "${snpeff_db}" \
 "${bcftools_out}" >  "${annotate_vcf}"
-
-# subset annotated to just SNPs
-# and output tab-delimited file for use in R MCA script for preliminary clustering
-module unload bcftools
-module load bcftools/1.9
-
-bcftools view -m2 -M2 -v snps "${annotate_vcf}" \
-| bcftools view -e 'GT="mis"' \
-| bcftools query -H -f '%CHROM\t%POS[\t%GT]\n' > "${genotype_table}"
-
-sed -i '1s/\[[0-9]\+\]//g' "${genotype_table}"
-sed -i '1s/\:GT//g' "${genotype_table}"
-sed -i '1s/^\# //' "${genotype_table}"
 
 bgzip "${annotate_vcf}"
 tabix "${annotate_vcf}".gz
