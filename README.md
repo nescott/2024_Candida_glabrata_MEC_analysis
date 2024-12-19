@@ -75,13 +75,6 @@ have been uploaded to PRJNA1069094. Reads were QC'd with NanoPlot 1.41.6.
 ## Long read assembly
 
 
-## Phylogenetic tree building
-### MEC isolates only:
-
-
-### Expanded *C. glabrata* data set:
-
-
 ## Copy number analysis
 
 
@@ -89,4 +82,11 @@ have been uploaded to PRJNA1069094. Reads were QC'd with NanoPlot 1.41.6.
 
 
 ## Karyotyping (CHEF gels)
+
+
+## Phylogenetic tree building
+### MEC isolates only:
+
+
+### Expanded *C. glabrata* data set:
 
