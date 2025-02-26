@@ -1,0 +1,3 @@
+canu -d canu -p mec339 genomeSize=12.3m -pacbio-hifi
+/home/selmecki/shared/disaster_recovery/Sequencing_Runs/AnnaSelmecki230621/pacbio/MEC339/MEC339_pacbio.fastq.gz
+gridOptions="--time=4:00:00 --partition=aglarge"
