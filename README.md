@@ -72,21 +72,3 @@ Sequel IIe for 15hr collection). Reads are in
 /home/selmecki/shared/disaster_recovery/Sequencing_Runs/AnnaSelmecki230621 and
 have been uploaded to PRJNA1069094. Reads were QC'd with NanoPlot 1.41.6.
 
-## Long read assembly
-
-
-## Copy number analysis
-
-
-## Phenotypic data
-
-
-## Karyotyping (CHEF gels)
-
-
-## Phylogenetic tree building
-### MEC isolates only:
-
-
-### Expanded *C. glabrata* data set:
-
