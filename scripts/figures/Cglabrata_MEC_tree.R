@@ -1,10 +1,7 @@
-## ---------------------------
 ## Purpose of script: Input, manipulate and plot phylogenetic tree data
 ## Author: Nancy Scott
 ## Email: scot0854@umn.edu
-## ---------------------------
 options(scipen = 999)
-## ---------------------------
 # Load packages
 library(tidyverse)
 library(ggtree)

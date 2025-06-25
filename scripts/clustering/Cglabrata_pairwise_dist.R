@@ -1,11 +1,7 @@
-## ---------------------------
 ## Purpose: Calculate and plot pairwise differing sites or alleles
-## Author: Nancy Scott
 ## Email: scot0854@umn.edu
-## ---------------------------
-#options(scipen = 999)
-## ---------------------------
-## load packages
+
+# load packages----
 library(vcfR)
 library(poppr)
 library(tidyverse)
@@ -14,12 +10,10 @@ library(rstatix)
 library(scales)
 library(patchwork)
 
-source("ch2/redcap_MIC_summary.R")
+source("../Candida_clinical_isolate_data/redcap_reports/MIC_data_summary.R")
 
 species <- "C. glabrata"
 in_variant_file <- "~/umn/data/variants/Cglabrata/Cglabrata_MEC_bwa_filtered_annotated.vcf.gz"
-#in_variant_file <- "~/umn/data/variants/Cglabrata/Cglabrata_series_unfixed_snps.vcf.gz"
-#series_ids <- scan("~/umn/data/metadata/Cglabrata_series_samples.txt", what = character())
 
 in_patient_data <- "~/umn/data/metadata/2024_Cglabrata_sorted_patient_info.xlsx"
 ordered_patient_data <-  "~/umn/data/metadata/Cglabrata_MEC_raxml_midpoint_tips.csv"

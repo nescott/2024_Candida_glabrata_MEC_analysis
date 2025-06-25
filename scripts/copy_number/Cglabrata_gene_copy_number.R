@@ -1,9 +1,6 @@
-################################################################################
-## Purpose: Overlap GC-corrected read depth with gene locations to find candidate
-## copy number changes
+## Purpose: Overlap read depth and gene locations to find candidate copy number changes
 ## Author: Nancy Scott
 ## Email: scot0854@umn.edu
-################################################################################
 
 library(readxl)
 library(tidyverse)
@@ -11,11 +8,11 @@ library(GenomicRanges)
 library(regioneR)
 library(rtracklayer)
 
-# Sample inputs
+# Sample inputs----
 spreadsheet_list <- "ch4/Cglabrata_depth_files.txt"
 copy_number_files <- scan(spreadsheet_list, what=character())
 
-# Genome inputs
+# Genome inputs----
 candida_gff <- "~/umn/local/ref_genomes/C_glabrata_CBS138_version_s05-m03-r02_features2.gff"
 region_file <- "~/umn/local/ref_genomes/C_glabrata_CBS138_version_s05-m03-r02_regions.bed"
 
@@ -36,14 +33,14 @@ coverage_function <- function(depth_range, gene_range, op, threshold, overlap_fr
 }
 
 
-# GFF
+# Load GFF----
 features <- import.gff(candida_gff)
 genes <- features[features$type=="gene"]
 
-# Ranges of interest (not repeat regions, LTRs, retrotransposons)
+# Load ranges of interest (not repeat regions, LTRs, retrotransposons)----
 regions <- import.bed(region_file)
 
-# Read in 
+# Loop over samples and append results to outfile---- 
 for(i in 1:length(copy_number_files)){
   sample_id <- str_extract(copy_number_files[i], "AMS[:digit:]+|MEC[:digit:]+")
 

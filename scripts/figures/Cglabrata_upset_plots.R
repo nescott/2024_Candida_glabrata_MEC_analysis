@@ -1,9 +1,8 @@
-## ---------------------------
 ## Purpose: Plot intersection of SNPs in series 
 ## Author: Nancy Scott
 ## Email: scot0854@umn.edu
-## ---------------------------
 
+# Load packages, data, set variables----
 library(UpSetR)
 library(tidyverse)
 
@@ -21,6 +20,7 @@ names(snps)[names(snps)=="MEC335"] <- "54-8"
 
 res_colors <- c(rep("#004488", 5), "#bb5566", rep("#004488", 2))
 
+# Plot----
 p <- upset(snps, nsets=8, 
        order.by = "degree", 
        mainbar.y.label = "Shared and Unique SNPs", 
@@ -32,7 +32,7 @@ p <- upset(snps, nsets=8,
        queries = list(list(query = intersects, params = list("54-3"), active = T,
                            color = "#bb5566")))
 
-
+# Save----
 pdf("Cglabrata_case54_upset.pdf", width = 6, height = 5.5, bg = "white")
 print(p)
 dev.off()

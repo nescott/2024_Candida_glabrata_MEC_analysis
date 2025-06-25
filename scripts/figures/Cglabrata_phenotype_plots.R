@@ -1,11 +1,11 @@
-## ---------------------------
 ## Purpose: Summary plots of growth curve metrics
 ## Author: Nancy Scott
 ## Email: scot0854@umn.edu
-## ---------------------------
 options(scipen = 999) 
 
-source("~/umn/2024_Candida_clinical_isolate_phenotyping/redcap_reports/MIC_data_summary.R")
+# Load data and packages----
+source("../Candida_clinical_isolate_data/redcap_reports/MIC_data_summary.R")
+
 library(patchwork)
 library(ggbeeswarm)
 
@@ -13,7 +13,7 @@ drugs <- as_labeller(c(fluconazole="Fluconazole",
                        micafungin="Micafungin",
                        `amphotericin B` = "Amphotericin B"))
 
-# MIC sub-plots
+# MIC sub-plots----
 flc <- ggplot(mic_info %>% filter(genus_species == "C. glabrata", drug=="fluconazole"), aes(x=mic50))+
     geom_bar(fill = "#999933", just = 1) +
     scale_x_discrete(limits = c("0.5", "1", "2", "4", "8", "16", "32", ">32")) +
@@ -54,10 +54,11 @@ amb <- ggplot(mic_info %>% filter(genus_species == "C. glabrata", drug=="amphote
     xlab("\nAmphotericin B MIC90") +
     ylab(NULL)
 
+# Merge and save----
 flc + mcf + amb
 ggsave("images/Cglabrata/MIC_GC_SMG/Cglabrata_MEC_MICs.tiff", bg="white", width = 8, height = 2.93, units = "in", device = tiff, dpi=300)
 
-# SMG subplots
+# SMG subplots----
 flc_smg <- ggplot(mic_info%>% filter(genus_species == "C. glabrata", drug == "fluconazole"), 
                   aes(x=genus_species, y=mean_smg)) + 
     geom_beeswarm(size=1, cex = 2, color = "#999933") +
@@ -90,6 +91,7 @@ amb_smg <- ggplot(mic_info%>% filter(genus_species == "C. glabrata", drug=="amph
   xlab("Amphotericin B") +
   theme(axis.text.x = element_blank())
 
+# Merge and save----
 flc_smg + mcf_smg + amb_smg
 
 ggsave("Cglabrata_MEC_SMGs.tiff", bg="white", width = 11, height = 4, units = "in", device = tiff, dpi=300)

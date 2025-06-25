@@ -1,13 +1,12 @@
-## ---------------------------
 ## Purpose: Summary plots of growth curve metrics
 ## Author: Nancy Scott
 ## Email: scot0854@umn.edu
-## ---------------------------
 options(scipen = 999) 
 
 library(patchwork)
 library(ggbeeswarm)
 
+# Variables----
 save_path <- "~/umn/images/2023_growth_curves/"
 
 growth_curves <- '58045'
@@ -15,7 +14,7 @@ growth_curves <- '58045'
 species_colors <- c("#88CCEE", "#999933", "#CC6677", "#44AA99", "#117733", "#332288",
                     "#882255","#BBBBBB", "#AA4499", "#DDCC77", "black")
 
-# function to import report from redcap
+# Report import function----
 import_report <- function(report_number) {
   url <- "https://redcap.ahc.umn.edu/redcap/api/"
   formData <- list("token"=Sys.getenv("redcap_api_key"),
@@ -31,10 +30,9 @@ import_report <- function(report_number) {
   response <- httr::POST(url, body = formData, encode = "form")
   result <- httr::content(response, show_col_types = FALSE)
 }
-################################################################################
-# Read in reports.
 
-source("ch2/redcap_MIC_summary.R")
+# Read in and join reports----
+source("../Candida_clinical_isolate_data/redcap_reports/MIC_data_summary.R")
 
 gc <- import_report(growth_curves) %>%
     filter(redcap_repeat_instrument != "NA", 
@@ -50,8 +48,8 @@ gc <- gc %>%
 
 gc <- gc %>% 
   left_join(mic_info, by=join_by(primary_id))
-################################################################################
-# for ordering species and colors for consistency
+
+# for ordering species and colors for consistency----
 species_count <- sample_info %>%
     group_by(genus_species) %>%
     summarize(species_count=n()) %>%
@@ -62,7 +60,7 @@ species_colors <- species_colors %>%
 
 gc$genus_species <- factor(gc$genus_species, levels = species_count$genus_species)
 
-################################################################################
+# Plot AUC per drug----
 flc_auc <- gc %>% 
     filter(genus_species %in% c("C. glabrata"), drug=="fluconazole") %>% 
     ggplot(aes(x=mic50, y=auc_e)) + 
@@ -90,6 +88,7 @@ amb_auc <- gc %>%
   xlab("Amphotericin B MIC90") +
   ylab(NULL)
 
+# Merge and save----
 combined_auc <- flc_auc + mcf_auc + amb_auc
 
 ggsave("images/Cglabrata/MIC_GC_SMG/2023_AUC_by_drug_mic.png", 

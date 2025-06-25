@@ -1,12 +1,7 @@
-## ---------------------------
-## Script name: genome_vis.R
-## Purpose: Plot genome-wide view of (rolling) mean read depth
-## Author: Nancy Scott
+## Purpose: Plot genome-wide view of rolling mean read depth
 ## Email: scot0854@umn.edu
-## ---------------------------
 ## Notes: Adapted from https://github.com/berman-lab/ymap
 ## and https://github.com/stajichlab/C_lusitaniae_popseq.
-## ---------------------------
 #!/usr/bin/env Rscript
 args = commandArgs(trailingOnly = TRUE)
 
@@ -17,17 +12,15 @@ feature_file <- args[3]
 label_file <- args[4]
 mito <- "mito_C_glabrata_CBS138"
 
-## ---------------------------
-# Load packages
+# Load packages----
 library(RcppRoll)
 library(tidyverse)
 library(ggplot2)
 library(writexl)
 library(readxl)
 
-## ---------------------------
-# Data-wrangling variables
-window <- 5000 # size of window used for rolling mean and snp density
+# Variables----
+window <- 5000 # size of window for rolling mean and snp density
 ploidy <- 1
 
 y_axis_labels <- c(1,2,3)
@@ -37,12 +30,10 @@ image_dir <- "~/umn/images/Cglabrata/2024-02-15_genome_plots/"
 ref <- "cgd_s05m03r02"
 data_dir <-"~/umn/data/genome_plots/Cglabrata/"
 
-# Plotting variables
-# X-axis labels overwrite input scaffold names in final plot
 chr_ids <- scan(label_file, what = character())
 
-snp_low <- "white"  # snp LOH colors, plot function uses 2-color gradient scale
-snp_high <- "black"  # snp LOH colors, plot function uses 2-color gradient scale
+snp_low <- "white"  # 2-color gradient scale
+snp_high <- "black"  # 2-color gradient scale
 cnv_color <- "dodgerblue4"  # copy number color
 
 ploidy_multiplier <- 3  # this multiplied by ploidy sets the max-y scale
@@ -51,7 +42,6 @@ chrom_outline_color <- "gray15"  # color of chromosome outlines
 
 chrom_line_width <- 0.2  # line width of chromosome outlines
 
-## ---------------------------
 # Base R doesn't have a mode calculation
 Modes <- function(x) {
   ux <- unique(x)
@@ -59,8 +49,7 @@ Modes <- function(x) {
   ux[tab == max(tab)]
 }
 
-## ---------------------------
-# Relative copy number calcs from samtools depth input
+# Relative copy number calcs from samtools depth input----
 genome_raw <- read.table(read_depth_file, header = TRUE)
 genome_raw <- genome_raw %>%
   filter(chr != mito)
@@ -77,12 +66,11 @@ subset_chr_median <- chr_median %>%  # modest filtering to avoid aneuploidy skew
 
 genome_median <- median(subset_chr_median$chr_med)  # filtered median used to calculate relative depth
 
-# Reshaping dataframe for future plotting
+# Reshape dataframe for plotting----
 genome_window <- genome_raw %>%
   group_by(chr, index=consecutive_id(chr)) %>%
   reframe(position=unique((pos %/% window)*window+1))
 
-# More plotting stuff
 genome_window <- genome_window %>%
   group_by(index) %>%
   arrange(index) %>%
@@ -92,7 +80,7 @@ chrs <- as.vector(unique(genome_window$chr_length))
 chr_plot <- c()
 for(i in 1:length(chrs)){chr_plot[i] <- sum(chrs[1:i-1])}
 
-# Finally calculate relative depth and copy number, plus more plotting
+# Calculate relative depth and copy number----
 genome_depth <- genome_raw %>%
   group_by(chr, index=consecutive_id(chr)) %>%
   filter(pos %in% genome_window$position) %>%
@@ -101,8 +89,7 @@ genome_depth <- genome_raw %>%
   mutate(chr_sums=chr_plot[index]) %>%  # for proper x-axis plotting
   mutate(plot_pos=ifelse(index==1, pos, (pos+chr_sums+(inter_chr_spacing*(index-1))))) # for proper x-axis plotting
 
-## ---------------------------
-# Small dataframes for chrom. outlines and features
+# Small dataframes for chrom. outlines and features----
 chroms <- genome_depth %>%
   group_by(index) %>%
   summarise(xmin=min(plot_pos), xmax=max(plot_pos), ymin=0, ymax=Inf)
@@ -116,12 +103,11 @@ features <- features %>%
 features <- features %>%
      mutate(plot_start = start + xmin, plot_end = end + xmin)
 
-# Tick marks to center chromosome ID label
+# Tick marks to center chromosome ID label----
 ticks <- tapply(genome_depth$plot_pos, genome_depth$index, quantile, probs =
                 0.5, na.remove = TRUE)
 
-## ---------------------------
-# Plot linear genome
+# Plot linear genome----
 p <- ggplot(genome_depth) +
   geom_segment(aes(x = plot_pos,
                    y = ifelse(copy_number <= ploidy*ploidy_multiplier, copy_number, Inf),
@@ -145,13 +131,10 @@ p <- ggplot(genome_depth) +
         axis.text.x = element_text(size=12),
         axis.title.y = element_text(size=12))
 
-## ---------------------------
-# Save plot
 ggsave(sprintf("%s%s_%s_%s_%sbp.png", image_dir, Sys.Date(), sample_id, ref, window),
        p, width = 18, height = 1.7, units = "in", device = png, dpi = 300, bg = "white")
 
-## ---------------------------
-# Save dataframes as excel
+# Save dataframes as excel----
 outfiles <- list(plotting_data=genome_depth,
                  read_depth_summary=chr_median,
                  raw_genome_median=as.data.frame(raw_genome_median),

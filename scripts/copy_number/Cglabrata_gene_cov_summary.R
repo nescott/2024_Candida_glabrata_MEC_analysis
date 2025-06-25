@@ -1,13 +1,10 @@
-################################################################################
 ## Purpose: Add coverage to spreadsheet of del/dup ORFs
 ## Author: Nancy Scott
 ## Email: scot0854@umn.edu
-################################################################################
 
 library(tidyverse)
 library(readxl)
 library(writexl)
-
 
 # Deletion/truncations
 deletion_summary <- read.delim("ch4/Cglabrata_MEC_candidate_deletions.tsv")

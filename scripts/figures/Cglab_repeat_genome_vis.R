@@ -1,23 +1,20 @@
-## ---------------------------
 ## Purpose: Replot genome-view of LOH and CNV from saved excel file (see "genome_vis.R)
 ## Author: Nancy Scott
 ## Email: scot0854@umn.edu
-## ---------------------------
 #!/usr/bin/env Rscript
 args = commandArgs(trailingOnly = TRUE)
 
-# Input file variables
+# Load packages----
+library(readxl)
+library(tidyverse)
+library(ggplot2)
+
+# Variables----
 genome_df_file <- "~/umn/data/genome_plots/Cglabrata/2024-02-15_MEC335.xlsx"   #args[1]
 sample_id <- "54-8"  #args[2] # or "YourID"
 feature_file <- "~/umn/Candida_genome_visualization/ref_genome_files/Cglabrata_CGD_s05m03r02_features.txt"  #args[3] # or "path/to/features.txt"
 label_file <- "~/umn/Candida_genome_visualization/ref_genome_files/Cglabrata_CGD_s05m03r02_chr_labels.txt"  #args[4] # or "path/to/chr_labels.txt"
 
-# Load packages
-library(readxl)
-library(tidyverse)
-library(ggplot2)
-
-# Set variables
 window <- 5000 # size of window used for rolling mean and snp density
 ploidy <- 1
 
@@ -41,6 +38,7 @@ chrom_line_width <- 0.2  # line width of chromosome outlines
 # X-axis labels overwrite input scaffold names in final plot
 chr_ids <- scan(label_file, what = character())
 chr_ids <- LETTERS[1:13]
+
 # Dataframe of joined copy number, snps, and plotting positions per window
 genome_depth <- read_xlsx(genome_df_file, sheet=1)
 
@@ -106,7 +104,6 @@ ggsave(sprintf("%s%s_%s_%s_%sbp.pdf",
        #dpi = 300,
        bg = "white")
 
-################################################################################
 
 small_cnv <- genome_depth %>% 
   filter(index==1)
